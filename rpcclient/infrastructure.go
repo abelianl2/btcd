@@ -786,7 +786,9 @@ func (c *Client) handleSendPostMessage(jReq *jsonRequest) {
 			jReq.responseChan <- &Response{result: nil, err: err}
 			return
 		}
-		httpReq.SetBasicAuth(user, pass)
+		if len(user) > 1 && len(pass) > 1 {
+			httpReq.SetBasicAuth(user, pass)
+		}
 
 		httpResponse, err = c.httpClient.Do(httpReq)
 
@@ -1277,6 +1279,10 @@ func (config *ConnConfig) getAuth() (username, passphrase string, err error) {
 	// Try username+passphrase auth first.
 	if config.Pass != "" {
 		return config.User, config.Pass, nil
+	}
+
+	if len(config.User) == 0 {
+		return "", "", err
 	}
 
 	// If no username or passphrase is set, try cookie auth.
